@@ -362,6 +362,9 @@ mfxStatus Launcher::ProcessResult()
     for (i = 0; i < m_pSessionArray.size(); i++)
     {
         mfxStatus sts = m_pSessionArray[i]->transcodingSts;
+		//Creating a storage of average FPS. 
+		double aveFPS = static_cast<double>(m_pSessionArray[i]->numTransFrames);
+		aveFPS = aveFPS / m_pSessionArray[i]->working_time;
         if (MFX_ERR_NONE != sts)
         {
             SuccessTranscode = false;
@@ -380,16 +383,18 @@ mfxStatus Launcher::ProcessResult()
         }
         else
         {
-            msdk_printf(MSDK_STRING("MFX session %d transcoding PASSED:\nProcessing time: %.2f sec \nNumber of processed frames: %d\n"),
+            msdk_printf(MSDK_STRING("MFX session %d transcoding PASSED:\nProcessing time: %.2f sec \nNumber of processed frames: %d\nAverage FPS: %.2f\n"),
                 i,
                 m_pSessionArray[i]->working_time,
-                m_pSessionArray[i]->numTransFrames);
+                m_pSessionArray[i]->numTransFrames,
+				aveFPS);
             if (pPerfFile)
             {
-                msdk_fprintf(pPerfFile, MSDK_STRING("MFX session %d transcoding PASSED:\nProcessing time: %.2f sec \nNumber of processed frames: %d\n"),
+            msdk_printf(MSDK_STRING("MFX session %d transcoding PASSED:\nProcessing time: %.2f sec \nNumber of processed frames: %d\nAverage FPS: %.2f\n"),
                     i,
                     m_pSessionArray[i]->working_time,
-                    m_pSessionArray[i]->numTransFrames);
+                    m_pSessionArray[i]->numTransFrames,
+					aveFPS);
             }
         }
 
