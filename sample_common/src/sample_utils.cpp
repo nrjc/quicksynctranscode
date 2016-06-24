@@ -379,9 +379,10 @@ mfxStatus CSmplBitstreamWriter::Init(const msdk_char *strFileName)
     Close();
 
     //init file to write encoded data
+	
     MSDK_FOPEN(m_fSource, strFileName, MSDK_STRING("wb+"));
     MSDK_CHECK_POINTER(m_fSource, MFX_ERR_NULL_PTR);
-
+	
     //set init state to true in case of success
     m_bInited = true;
     return MFX_ERR_NONE;
@@ -394,9 +395,9 @@ mfxStatus CSmplBitstreamWriter::WriteNextFrame(mfxBitstream *pMfxBitstream, bool
     MSDK_CHECK_POINTER(pMfxBitstream, MFX_ERR_NULL_PTR);
 
     mfxU32 nBytesWritten = 0;
-
-    nBytesWritten = (mfxU32)fwrite(pMfxBitstream->Data + pMfxBitstream->DataOffset, 1, pMfxBitstream->DataLength, m_fSource);
-    MSDK_CHECK_NOT_EQUAL(nBytesWritten, pMfxBitstream->DataLength, MFX_ERR_UNDEFINED_BEHAVIOR);
+	nBytesWritten = 1; //This just prevents warnings. 
+    //nBytesWritten = (mfxU32)fwrite(pMfxBitstream->Data + pMfxBitstream->DataOffset, 1, pMfxBitstream->DataLength, m_fSource);
+    //MSDK_CHECK_NOT_EQUAL(nBytesWritten, pMfxBitstream->DataLength, MFX_ERR_UNDEFINED_BEHAVIOR);
 
     // mark that we don't need bit stream data any more
     pMfxBitstream->DataLength = 0;
@@ -523,11 +524,16 @@ mfxStatus CSmplBitstreamReader::ReadNextFrame(mfxBitstream *pBS)
     MSDK_CHECK_ERROR(m_bInited, false, MFX_ERR_NOT_INITIALIZED);
 
     mfxU32 nBytesRead = 0;
-
-    memmove(pBS->Data, pBS->Data + pBS->DataOffset, pBS->DataLength);
-    pBS->DataOffset = 0;
-    nBytesRead = (mfxU32)fread(pBS->Data + pBS->DataLength, 1, pBS->MaxLength - pBS->DataLength, m_fSource);
-
+	//std::cout << "pBS->DataOffset: " << pBS->DataOffset << ", pBS->DataLength: " << pBS->DataLength << std::endl;
+	//void * memmove ( void * destination, const void * source, size_t num );
+	//I might assume that the memory is like this | Data1 | Data 2|
+	//memmove essentially moves Data 2 to Data 1. 
+    memmove(pBS->Data, pBS->Data + pBS->DataOffset, pBS->DataLength); //What is the DataOffset for, then? In fact, why is this even being done on the first go around? I DON'T UNDERSTAND!!!
+    pBS->DataOffset = 0; 
+	//size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
+	//essentially puts the output of the stream into the pBS->Data+pbs->DataLength
+    nBytesRead = (mfxU32)fread(pBS->Data + pBS->DataLength, 1, pBS->MaxLength - pBS->DataLength, m_fSource); //Also, why does this not read directly to the end in one sitting?
+	std::cout << nBytesRead << std::endl;
     if (0 == nBytesRead)
     {
         return MFX_ERR_MORE_DATA;
