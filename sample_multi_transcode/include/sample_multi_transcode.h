@@ -37,6 +37,10 @@ or https://software.intel.com/en-us/media-client-solutions-support.
 #include "vaapi_allocator.h"
 #endif
 
+
+int min;
+int max;
+
 namespace TranscodingSample
 {
     class Launcher
@@ -45,9 +49,9 @@ namespace TranscodingSample
         Launcher();
         virtual ~Launcher();
 
-        virtual mfxStatus Init(int argc, msdk_char *argv[]);
+        virtual mfxStatus Init(int argc, msdk_char *argv[], int curnum);
         virtual void      Run();
-        virtual mfxStatus ProcessResult();
+        virtual mfxStatus ProcessResult(double &totalaveFPS);
 
     protected:
         virtual mfxStatus VerifyCrossSessionsOptions();
