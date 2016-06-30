@@ -533,7 +533,7 @@ mfxStatus CSmplBitstreamReader::ReadNextFrame(mfxBitstream *pBS)
 	//size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
 	//essentially puts the output of the stream into the pBS->Data+pbs->DataLength
     nBytesRead = (mfxU32)fread(pBS->Data + pBS->DataLength, 1, pBS->MaxLength - pBS->DataLength, m_fSource); //Also, why does this not read directly to the end in one sitting?
-	std::cout << nBytesRead << std::endl;
+	//std::cout << nBytesRead << std::endl;
     if (0 == nBytesRead)
     {
         return MFX_ERR_MORE_DATA;
