@@ -76,7 +76,7 @@ mfxStatus Launcher::Init(int argc, msdk_char *argv[], int curnum)
 		InputParams.bIsJoin = true;
 		//Source and destination files
 		wstring strDsts(L"output.h264");
-		wstring strSrc(L".\\polycom_720p_office.264");
+		wstring strSrc = argv[1];
 		strDsts = to_wstring(j);
 		wcscpy(InputParams.strSrcFile, strSrc.c_str());
 		wcscpy(InputParams.strDstFile, strDsts.c_str());
@@ -86,6 +86,7 @@ mfxStatus Launcher::Init(int argc, msdk_char *argv[], int curnum)
 		InputParams.Reset();
 		InputParams.nAsyncDepth = 1; //Asynchronous Depth
 		InputParams.GopRefDist = 1; 
+		//InputParams.FrameNumberPreference = 5;
 		InputParams.nGpuCopyMode = MFX_GPUCOPY_ON;
 	}
 	// check correctness of input parameters
@@ -676,9 +677,15 @@ int _tmain(int argc, TCHAR *argv[])
 int main(int argc, char *argv[])
 #endif
 {
+	if (argc != 2)
+	{
+		cout << "ERROR: TWO PARAMETERS EXPECTED " << endl;
+		return 0;
+	}
+	
+	min = 1;
 	double FPS;
 	mfxStatus sts;
-	min = 1;
 	for(max=5,FPS=40;FPS>=30;max=max*2) 
 	{
 		Launcher * transcode = new Launcher;
@@ -728,7 +735,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	cout << "THE TOTAL NUMBER OF SESSIONS: " << min << endl;
-
+	
 
 	return 0;
 }
