@@ -80,12 +80,12 @@ mfxStatus Launcher::Init(int argc, msdk_char *argv[], int curnum)
 		strDsts = to_wstring(j);
 		wcscpy(InputParams.strSrcFile, strSrc.c_str());
 		wcscpy(InputParams.strDstFile, strDsts.c_str());
-		msdk_printf(strSrc.c_str());
-		msdk_printf(strDsts.c_str());
+		/*msdk_printf(strSrc.c_str());
+		msdk_printf(strDsts.c_str());*/
 		m_InputParamsArray.push_back(InputParams);
 		InputParams.Reset();
 		InputParams.nAsyncDepth = 1; //Asynchronous Depth
-		InputParams.GopRefDist = 1; 
+		InputParams.GopRefDist = 1;
 		//InputParams.FrameNumberPreference = 5;
 		InputParams.nGpuCopyMode = MFX_GPUCOPY_ON;
 	}
@@ -677,19 +677,66 @@ int _tmain(int argc, TCHAR *argv[])
 int main(int argc, char *argv[])
 #endif
 {
-	if (argc != 2)
-	{
-		cout << "ERROR: TWO PARAMETERS EXPECTED " << endl;
-		return 0;
-	}
-	
-	min = 1;
 	double FPS;
 	mfxStatus sts;
-	for(max=5,FPS=40;FPS>=30;max=max*2) 
+	if (argc == 2)
 	{
+		min = 1;
+		for (max = 5, FPS = 40; FPS >= 30; max = max * 2)
+		{
+			Launcher * transcode = new Launcher;
+			sts = transcode->Init(argc, argv, max);
+			fflush(stdout);
+			MSDK_CHECK_PARSE_RESULT(sts, MFX_ERR_NONE, 1);
+			transcode->Run();
+			sts = transcode->ProcessResult(FPS);
+			delete transcode;
+			cout << "The total average FPS is: " << FPS << endl;
+			fflush(stdout);
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, 1);
+			if (FPS < 30)
+			{
+				break;
+			}
+			min = max;
+		}
+		cout << "The minimum is: " << min << endl << "The maximum is: " << max << endl;
+		int curnum;
+		FPS = 40;
+		while (max != min)
+		{
+			curnum = (min + max) / 2;
+			Launcher * transcode = new Launcher;
+			sts = transcode->Init(argc, argv, curnum);
+			fflush(stdout);
+			MSDK_CHECK_PARSE_RESULT(sts, MFX_ERR_NONE, 1);
+			transcode->Run();
+			sts = transcode->ProcessResult(FPS);
+			delete transcode;
+			fflush(stdout);
+			MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, 1);
+			if (FPS >= 30) {
+				min = curnum;
+				cout << "min is " << min << endl;
+				cout << "max is " << max << endl;
+			}
+			else {
+				max = curnum;
+				cout << "min is " << min << endl;
+				cout << "max is " << max << endl;
+			}
+			if (min == max - 1) {
+				curnum = min;
+				break;
+			}
+		}
+		cout << "THE TOTAL NUMBER OF SESSIONS: " << min << endl;
+		return 0;
+	}
+	else if (argc == 3) {
 		Launcher * transcode = new Launcher;
-		sts = transcode->Init(argc, argv, max);
+		wstring numofinputstring = argv[2];
+		sts = transcode->Init(argc, argv, _wtoi(numofinputstring.c_str()));
 		fflush(stdout);
 		MSDK_CHECK_PARSE_RESULT(sts, MFX_ERR_NONE, 1);
 		transcode->Run();
@@ -698,44 +745,10 @@ int main(int argc, char *argv[])
 		cout << "The total average FPS is: " << FPS << endl;
 		fflush(stdout);
 		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, 1);
-		if (FPS < 30) 
-		{
-			break;
-		}
-		min = max;
 	}
-	cout << "The minimum is: " << min << endl << "The maximum is: " << max << endl;
-	int curnum;
-	FPS = 40;
-	while (max!=min)
-	{
-		curnum = (min + max) / 2;
-		Launcher * transcode = new Launcher;
-		sts = transcode->Init(argc, argv, curnum);
-		fflush(stdout);
-		MSDK_CHECK_PARSE_RESULT(sts, MFX_ERR_NONE, 1);
-		transcode->Run();
-		sts = transcode->ProcessResult(FPS);
-		delete transcode;
-		fflush(stdout);
-		MSDK_CHECK_RESULT(sts, MFX_ERR_NONE, 1);
-		if (FPS >= 30) {
-			min= curnum;
-			cout << "min is " << min << endl;
-			cout << "max is " << max << endl;
-		}
-		else {
-			max = curnum;
-			cout << "min is " << min << endl;
-			cout << "max is " << max << endl;
-		}
-		if (min == max - 1) {
-			curnum = min;
-			break;
-		}
-	}
-	cout << "THE TOTAL NUMBER OF SESSIONS: " << min << endl;
-	
+	else {
+		msdk_printf(MSDK_STRING("ERROR, WRONG NUMBER OF ARGUMENTS"));
+		return 0;
 
-	return 0;
+	}
 }
